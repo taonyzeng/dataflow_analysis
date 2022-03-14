@@ -10,7 +10,7 @@ using namespace std;
 namespace llvm {
 
     /* Applying Meet Operator */
-    BitVector DataFlow::applyMeetOp(BitVectorList inputs) {
+    BitVector DataFlow::applyMeetOp(vector<BitVector>& inputs) {
         BitVector result;
 
         if (!inputs.empty()) {
@@ -48,7 +48,7 @@ namespace llvm {
             domainToIndex[(void*)domain[i]] = i;
 
         // Find Boundary Blocks
-        BasicBlockList boundaryBlocks;
+        vector<BasicBlock*> boundaryBlocks;
         switch (direction) {
 
             case Direction::FORWARD:{
@@ -79,7 +79,7 @@ namespace llvm {
 
         *value = boundaryCond;
         boundaryRes.transferOutput.element = boundaryCond;
-        for (BasicBlockList::iterator I = boundaryBlocks.begin(), E = boundaryBlocks.end(); I != E; ++I) {
+        for (vector<BasicBlock*>::iterator I = boundaryBlocks.begin(), E = boundaryBlocks.end(); I != E; ++I) {
             result[*I] = boundaryRes;	// TODO: If we run into errors, this might be a cause (pointer problems!)
         }
 
@@ -102,10 +102,10 @@ namespace llvm {
 
         // Generate "neighbor" list: For forward analysis, these are predecessors, for backward analysis these are successors
         // So we won't have to switch on direction every time
-        std::map<BasicBlock*, BasicBlockList > blockNeighbors;
+        std::map<BasicBlock*, vector<BasicBlock*>> blockNeighbors;
 
         for (Function::iterator BB = F.begin(), BE = F.end(); BB != BE; ++BB) {
-            BasicBlockList neighborList;
+            vector<BasicBlock*> neighborList;
             BasicBlock* block = &*BB;
             
             switch (direction) {
@@ -129,7 +129,7 @@ namespace llvm {
         }
 
         // Prepare an order in which we will traverse BasicBlocks. This is to prevent having to write analysis code twice (for each direction)
-        BasicBlockList traversalOrder;
+        vector<BasicBlock*> traversalOrder;
 
         if(direction == Direction::FORWARD){
             ReversePostOrderTraversal<Function*> TR(&F);
@@ -151,7 +151,7 @@ namespace llvm {
         while (!converged) {
             converged = true;
 
-            for (BasicBlockList::iterator BB = traversalOrder.begin(), BE = traversalOrder.end(); BB != BE; ++BB) {
+            for (vector<BasicBlock*>::iterator BB = traversalOrder.begin(), BE = traversalOrder.end(); BB != BE; ++BB) {
 
                 // Get the current result for the block
                 BlockResult& blockRes = result[*BB];
@@ -161,9 +161,9 @@ namespace llvm {
                 BitVector oldVal = (direction == Direction::FORWARD) ? blockRes.out : blockRes.in;
 
                 // Collect Neighbor Results for Meet
-                BitVectorList meetInputs;
+                vector<BitVector> meetInputs;
 
-                for (BasicBlockList::iterator NI = blockNeighbors[*BB].begin(), NE = blockNeighbors[*BB].end(); NI != NE; ++NI) {
+                for (vector<BasicBlock*>::iterator NI = blockNeighbors[*BB].begin(), NE = blockNeighbors[*BB].end(); NI != NE; ++NI) {
                     BlockResult& neighborRes = result[*NI];
                     BitVector neighVal = neighborRes.transferOutput.element;
 

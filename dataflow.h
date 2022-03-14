@@ -32,8 +32,7 @@ using namespace std;
 
 namespace llvm {
 
-    typedef std::vector<BitVector> BitVectorList;
-    typedef std::vector<BasicBlock*> BasicBlockList;
+    //typedef std::vector<BasicBlock*> BasicBlockList;
 
     /*	For storing the output of a transfer function.
         We also store a list of BitVectors corresponding to predecessors/successors used to handle phi nodes) */
@@ -91,10 +90,10 @@ namespace llvm {
                 std::unordered_map<BasicBlock*, BitVector> killSet;
 
                 /* Applying Meet Operator */
-                BitVector applyMeetOp(BitVectorList inputs);
+                BitVector applyMeetOp(vector<BitVector>& inputs);
 
                 /* Apply analysis on Function F */
-                DataFlowResult run(Function &F, std::vector<void*> domain,
+                DataFlowResult run(Function &F, vector<void*> domain,
                                    BitVector boundaryCond, BitVector initCond);
 
         protected:
