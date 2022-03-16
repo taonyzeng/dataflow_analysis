@@ -19,7 +19,7 @@ namespace {
 
         protected:
 
-            TransferOutput transferFn(BitVector input, std::vector<void*> domain, std::map<void*, int> domainToIndex, BasicBlock* block)
+            TransferOutput transferFn(BitVector input, std::vector<void*> domain, std::unordered_map<void*, int> domainToIndex, BasicBlock* block)
             {
                 TransferOutput transferOutput;
 
@@ -80,7 +80,7 @@ namespace {
                             {
                                 //DBG(outs() << "Expr : " << expr->toString()  << " ");
                                 // Kill if either operand 1 or 2 match the variable assigned
-                                std::map<void*, int>::iterator iter = domainToIndex.find((void*) expr);
+                                std::unordered_map<void*, int>::iterator iter = domainToIndex.find((void*) expr);
 
                                 if (iter != domainToIndex.end())
                                 {
@@ -179,7 +179,7 @@ namespace {
 
                 // PRINTING RESULTS
                 // Map domain values to index in bitvector
-                std::map<void*, int> domainToIndex;
+                std::unordered_map<void*, int> domainToIndex;
                 for (int i = 0; i < domain.size(); i++)
                     domainToIndex[(void*)domain[i]] = i;
 
@@ -188,14 +188,15 @@ namespace {
 
                 for(BasicBlock& BL : F){
                     BasicBlock* block = &BL;
-
-                    outs() << "BB Name: "<< block->getName() << "\n";
-                    outs() << "IN: " << formatSet(domain, output.result[block].in, 1) << "\n";
-                    outs() << "OUT: "<< formatSet(domain, output.result[block].out, 1) << "\n";
-                    outs() << "Gen: "<< formatSet(domain, pass.genSet[block], 1) << "\n";
-                    outs() << "Kill: "<< formatSet(domain, pass.killSet[block], 1) << "\n\n";
+                    
+                    outs() << "\033[1;31m[BB Name]:\033[0m"<< block->getName() << "\n";
+                    outs() << "\033[1;32m[IN]:  \033[0m bitvector = "<< formatBitVector(output.result[block].in) << ", set = "<< formatSet(domain, output.result[block].in, 1) << "\n";
+                    outs() << "\033[1;32m[OUT]: \033[0m bitvector = "<< formatBitVector(output.result[block].out) << ", set = "<< formatSet(domain, output.result[block].out, 1) << "\n";
+                    outs() << "\033[1;32m[Gen]: \033[0m bitvector = "<< formatBitVector(pass.genSet[block]) << ", set = "<< formatSet(domain, pass.genSet[block], 1) << "\n";
+                    outs() << "\033[1;32m[Kill]:\033[0m bitvector = "<< formatBitVector(pass.killSet[block]) << ", set = "<< formatSet(domain, pass.killSet[block], 1) << "\n\n";
 
                 }
+
 
                 // No modification
                 return false;

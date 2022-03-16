@@ -18,7 +18,7 @@ namespace {
             LivenessAnalysis(Direction direction, MeetOp meet_op) : DataFlow(direction, meet_op) { }
 
         protected:
-            TransferOutput transferFn(BitVector input,  std::vector<void*> domain, std::map<void*, int> domainToIndex, BasicBlock* block){
+            TransferOutput transferFn(BitVector input,  std::vector<void*> domain, std::unordered_map<void*, int> domainToIndex, BasicBlock* block){
 
                 TransferOutput transferOutput;
 
@@ -64,7 +64,7 @@ namespace {
                     }
 
                     // Definitions
-                    std::map<void*, int>::iterator iter = domainToIndex.find((void*)(&*insn));
+                    std::unordered_map<void*, int>::iterator iter = domainToIndex.find((void*)(&*insn));
                     if (iter != domainToIndex.end())
                         defSet.set((*iter).second);
                 }
@@ -142,11 +142,11 @@ namespace {
                 for(BasicBlock& BL : F){
                     BasicBlock* block = &BL;
 
-                    outs() << "BB Name: "<< block->getName() << "\n";
-                    outs() << "IN: " << formatSet(domain, output.result[block].in, 0) << "\n";
-                    outs() << "OUT: "<< formatSet(domain, output.result[block].out, 0) << "\n";
-                    outs() << "Use: "<< formatSet(domain, pass.genSet[block], 0) << "\n";
-                    outs() << "Def: "<< formatSet(domain, pass.killSet[block], 0) << "\n\n";
+                    outs() << "\033[1;31m[BB Name]:\033[0m"<< block->getName() << "\n";
+                    outs() << "\033[1;32m[IN]:  \033[0m bitvector = "<< formatBitVector(output.result[block].in) << ", set = "<< formatSet(domain, output.result[block].in, 0) << "\n";
+                    outs() << "\033[1;32m[OUT]: \033[0m bitvector = "<< formatBitVector(output.result[block].out) << ", set = "<< formatSet(domain, output.result[block].out, 0) << "\n";
+                    outs() << "\033[1;32m[Use]: \033[0m bitvector = "<< formatBitVector(pass.genSet[block]) << ", set = "<< formatSet(domain, pass.genSet[block], 0) << "\n";
+                    outs() << "\033[1;32m[Def]: \033[0m bitvector = "<< formatBitVector(pass.killSet[block]) << ", set = "<< formatSet(domain, pass.killSet[block], 0) << "\n\n";
                 }
 
                 // No modification

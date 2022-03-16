@@ -39,11 +39,11 @@ namespace llvm {
     /* Apply analysis on Function F */
     DataFlowResult DataFlow::run(Function &F, std::vector<void*> domain,
                                  BitVector boundaryCond, BitVector initCond) {
-        std::map<BasicBlock*, BlockResult> result;
+        std::unordered_map<BasicBlock*, BlockResult> result;
         bool modified = false;
 
         // Map domain values to index in bitvector
-        std::map<void*, int> domainToIndex;
+        std::unordered_map<void*, int> domainToIndex;
         for (int i = 0; i < domain.size(); i++)
             domainToIndex[(void*)domain[i]] = i;
 
@@ -102,7 +102,7 @@ namespace llvm {
 
         // Generate "neighbor" list: For forward analysis, these are predecessors, for backward analysis these are successors
         // So we won't have to switch on direction every time
-        std::map<BasicBlock*, vector<BasicBlock*>> blockNeighbors;
+        std::unordered_map<BasicBlock*, vector<BasicBlock*>> blockNeighbors;
 
         for (Function::iterator BB = F.begin(), BE = F.end(); BB != BE; ++BB) {
             vector<BasicBlock*> neighborList;
@@ -168,7 +168,7 @@ namespace llvm {
                     BitVector neighVal = neighborRes.transferOutput.element;
 
                     // Union the value if we find a match with neighbor-specific value
-                    std::map<BasicBlock*, BitVector>::iterator match = neighborRes.transferOutput.neighborVals.find(*BB);
+                    std::unordered_map<BasicBlock*, BitVector>::iterator match = neighborRes.transferOutput.neighborVals.find(*BB);
                     if (match != neighborRes.transferOutput.neighborVals.end()) {
                         neighVal |= match->second;
                     }

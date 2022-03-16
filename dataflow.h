@@ -24,7 +24,6 @@
 #include <iostream>
 #include <vector>
 #include <unordered_map>
-#include <map>
 #include <string>
 #include <iomanip>
 
@@ -38,7 +37,7 @@ namespace llvm {
         We also store a list of BitVectors corresponding to predecessors/successors used to handle phi nodes) */
     struct TransferOutput {
         BitVector element;
-        std::map<BasicBlock*, BitVector> neighborVals;
+        std::unordered_map<BasicBlock*, BitVector> neighborVals;
     };
 
     /* Stores the IN and OUT sets for a basic block. Also a variable to store the temporary output of the transfer function */
@@ -64,11 +63,11 @@ namespace llvm {
     /* Result of pass on a function */
     struct DataFlowResult {
         /* Mapping from basic blocks to their results */
-        std::map<BasicBlock*, BlockResult> result;
+        std::unordered_map<BasicBlock*, BlockResult> result;
 
         /* Mapping from domain elements to indices in bitvectors
            (to figure out which bits are which values) */
-        std::map<void*, int> domainToIndex;
+        std::unordered_map<void*, int> domainToIndex;
 
         bool modified;
     };
@@ -101,7 +100,7 @@ namespace llvm {
                     Takes one set (IN/OUT), domain to index mapping, basic block, and outputs the other set (OUT/IN) */
             virtual TransferOutput transferFn(BitVector input,
                                               std::vector<void*> domain,
-                                              std::map<void*, int> domainToIndex,
+                                              std::unordered_map<void*, int> domainToIndex,
                                               BasicBlock* block) = 0;
 
 

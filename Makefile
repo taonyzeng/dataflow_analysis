@@ -1,16 +1,29 @@
-INC=-I/usr/local/include/
-all: liveness.so available.so reaching.so
+all: liveness.so available.so reaching.so inputs
 
-CXXFLAGS = -rdynamic $(shell llvm-config --cxxflags) $(INC) -g -O0 -fPIC
+CXX = clang
+CXXFLAGS = $(shell llvm-config --cxxflags) -fcolor-diagnostics -g -O0 -fPIC
+OPT = opt
+TEST = extra_test
+
+available-support.o: available-support.cpp available-support.h
 
 dataflow.o: dataflow.cpp dataflow.h
-
-available-support.o: available-support.cpp available-support.h	
+liveness.o: liveness.cpp 
+available.o: available.cpp
+reaching.o: reaching.cpp
 
 %.so: %.o dataflow.o available-support.o
 	$(CXX) -dylib -shared $^ -o $@
 
-clean:
-	rm -f *.o *~ *.so
+# TESTING
+inputs : $(patsubst %.c,%.bc,$(wildcard $(TEST)/*.c)) 
+ 
+%.tmp: %.c
+	$(CXX) -O0 -emit-llvm -c $^ -o $@ 
 
-.PHONY: clean all
+%.bc: %.tmp
+	$(OPT) -mem2reg $^ -o $@
+
+# CLEAN
+clean:
+	rm -f *.o *~ *.so out $(TEST)/*.bc                 
